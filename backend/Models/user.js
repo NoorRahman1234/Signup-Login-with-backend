@@ -36,12 +36,12 @@ const UserSchema = new mongoose.Schema({
 // --- THE PROFESSIONAL TOUCH: PRE-SAVE HOOK ---
 // This code runs AUTOMATICALLY every time you save a user. 
 // It hashes the password so you never store plain text.
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function() {
   if (!this.isModified('password')) return next();
   
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
+  // next();
 });
 
 module.exports = mongoose.model('User', UserSchema);

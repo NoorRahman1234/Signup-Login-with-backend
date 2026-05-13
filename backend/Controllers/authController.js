@@ -28,12 +28,10 @@ exports.signup = async (req, res) => {
       password,
     });
 
-    // 3. Generate Token
-    const token = createToken(user._id);
-
+    // 3. Generate Response
+   
     res.status(201).json({
       success: true,
-      token,
       user: {
         id: user._id,
         username: user.username,
@@ -79,3 +77,6 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+

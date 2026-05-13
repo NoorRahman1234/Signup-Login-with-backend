@@ -1,4 +1,6 @@
+
 import { useState } from 'react';
+import axios from 'axios';
 
 const LoginForm = () => {
   const [credentials, setCredentials] = useState({
@@ -22,85 +24,89 @@ const LoginForm = () => {
     setError('');
     setIsLoading(true);
 
-    // Mock API Call
-    setTimeout(() => {
-      if (credentials.email === "admin@example.com" && credentials.password === "password123") {
-        alert("Login Successful! Redirecting...");
-      } else {
-        setError("Invalid email or password. Please try again.");
-      }
+    try {
+      // --- REAL API CALL ---
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email: credentials.email,
+        password: credentials.password
+      });
+
+      // 1. If successful, save the token (just like in Postman)
+      localStorage.setItem('token', response.data.token);
+      
+      alert("Login Successful! Welcome back.");
+      
+      // 2. Redirect the user (e.g., to your POS dashboard)
+      window.location.href = '/dashboard'; 
+
+    } catch (err) {
+      // 3. If backend returns an error (e.g., "Invalid password")
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <h2 style={styles.title}>Welcome Back</h2>
-        <p style={styles.subtitle}>Please enter your details</p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-10 rounded-2xl shadow-xl">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">Welcome Back</h2>
+        <p className="text-center text-gray-500 mb-8">Please enter your details</p>
         
-        {error && <div style={styles.errorBanner}>{error}</div>}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-6 text-sm text-center border border-red-200">
+            {error}
+          </div>
+        )}
 
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Email</label>
-          <input 
-            type="email" name="email" required
-            value={credentials.email} onChange={handleChange} 
-            style={styles.input} placeholder="Enter your email"
-          />
-        </div>
-
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Password</label>
-          <input 
-            type="password" name="password" required
-            value={credentials.password} onChange={handleChange} 
-            style={styles.input} placeholder="••••••••"
-          />
-        </div>
-
-        <div style={styles.row}>
-          <label style={styles.checkboxLabel}>
+        <div className="space-y-5">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
             <input 
-              type="checkbox" name="rememberMe" 
-              checked={credentials.rememberMe} onChange={handleChange} 
+              type="email" name="email" required
+              value={credentials.email} onChange={handleChange} 
+              className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-black transition" 
+              placeholder="Enter your email"
             />
-            Remember me
-          </label>
-          <a href="#" style={styles.forgotPass}>Forgot password?</a>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+            <input 
+              type="password" name="password" required
+              value={credentials.password} onChange={handleChange} 
+              className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-black transition" 
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div className="flex justify-between items-center text-sm">
+            <label className="flex items-center gap-2 cursor-pointer text-gray-600">
+              <input 
+                type="checkbox" name="rememberMe" 
+                checked={credentials.rememberMe} onChange={handleChange} 
+                className="w-4 h-4 accent-black"
+              />
+              Remember me
+            </label>
+            <a href="#" className="text-blue-600 font-medium hover:underline">Forgot password?</a>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className={`w-full py-3 bg-black text-white rounded-lg font-bold text-lg transition ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
+          </button>
         </div>
 
-        <button 
-          type="submit" 
-          disabled={isLoading}
-          style={{...styles.button, opacity: isLoading ? 0.7 : 1}}
-        >
-          {isLoading ? 'Signing in...' : 'Sign In'}
-        </button>
-
-        <p style={styles.footerText}>
-          Don't have an account? <a href="./Signup" style={styles.link}>Sign up</a>
+        <p className="text-center mt-8 text-gray-600 text-sm">
+          Don't have an account? <a href="/signup" className="text-blue-600 font-bold hover:underline">Sign up</a>
         </p>
       </form>
     </div>
   );
-};
-
-const styles = {
-  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f0f2f5' },
-  form: { background: '#fff', padding: '40px', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' },
-  title: { margin: '0 0 10px 0', textAlign: 'center', color: '#1a1a1a', fontSize: '24px' },
-  subtitle: { textAlign: 'center', color: '#666', marginBottom: '30px', fontSize: '14px' },
-  inputGroup: { marginBottom: '20px' },
-  label: { display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333', fontSize: '14px' },
-  input: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box', outline: 'none', transition: 'border 0.3s' },
-  row: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', fontSize: '13px' },
-  checkboxLabel: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' },
-  forgotPass: { color: '#007bff', textDecoration: 'none', fontWeight: '500' },
-  button: { width: '100%', padding: '12px', backgroundColor: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', fontWeight: '600' },
-  errorBanner: { backgroundColor: '#ffebee', color: '#c62828', padding: '10px', borderRadius: '6px', marginBottom: '20px', fontSize: '14px', textAlign: 'center' },
-  footerText: { textAlign: 'center', marginTop: '25px', fontSize: '14px', color: '#666' },
-  link: { color: '#007bff', textDecoration: 'none', fontWeight: '600' }
 };
 
 export default LoginForm;

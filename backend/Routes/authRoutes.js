@@ -6,7 +6,7 @@ const { protect } = require('../Middlewares/authMiddleware');
 
 // Public routes
 router.post('/signup', signup);
-router.post('/sogin', login);
+router.post('/login', login);
 
 // Protected route (Only logged-in users can see this)
 router.get('/me', protect, (req, res) => {
@@ -14,3 +14,7 @@ router.get('/me', protect, (req, res) => {
 });
 
 module.exports = router;
+
+
+
+
